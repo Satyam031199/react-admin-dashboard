@@ -3,6 +3,9 @@ import DataTable from "../../components/dataTable/DataTable";
 import { userRows } from "../../data";
 import "./Users.scss";
 import { GridColDef } from "@mui/x-data-grid";
+import { useState } from "react";
+import Modal from "@mui/material/Modal";
+import AddUser from "../../components/add/AddUser";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 90 },
@@ -72,11 +75,24 @@ const columns: GridColDef[] = [
 ];
 
 const Users = () => {
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
   return (
     <div className="users">
       <div className="info">
         <h1>Users</h1>
-        <Button variant="contained">Add new User</Button>
+        <Button onClick={handleOpen} variant="contained">
+          Add new User
+        </Button>
+        <Modal
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="modal-modal-title"
+          aria-describedby="modal-modal-description"
+        >
+          <AddUser />
+        </Modal>
       </div>
       <DataTable columns={columns} rows={userRows} slug="users" />
     </div>
