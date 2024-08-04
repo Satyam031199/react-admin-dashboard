@@ -5,7 +5,6 @@ import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
 import Footer from "./components/footer/Footer";
 import Menu from "./components/menu/Menu";
-import Login from "./pages/login/Login";
 import "./styles/global.scss";
 import User from "./pages/user/User";
 import Product from "./pages/product/Product";
@@ -13,6 +12,8 @@ import {
   QueryClient,
   QueryClientProvider
 } from "@tanstack/react-query";
+import SignInPage from "./sign-in/[[...index]]";
+import SignUpPage from "./sign-up/[[...index]]";
 
 const queryClient = new QueryClient();
 
@@ -63,9 +64,13 @@ function App() {
       ],
     },
     {
-      path: "/login",
-      element: <Login />,
+      path: '/sign-in',
+      element: <SignInPage />
     },
+    {
+      path: '/sign-up',
+      element: <SignUpPage/>
+    }
   ]);
   return <RouterProvider router={router} />;
 }
