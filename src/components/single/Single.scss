@@ -1,0 +1,40 @@
+.single{
+    display: flex;
+    height: 100%;
+    .view{
+        flex: 1;
+        .info{            
+            margin-bottom: 50px;
+            .topInfo{
+                display: flex;
+                gap: 20px;
+                align-items: center;
+                h1{
+                    font-weight: 500;
+                }
+            }
+            .details{
+                font-size: 18px;
+                font-weight: 200;
+                .item{
+                    margin: 15px 0px;
+                    .itemTitle{
+                        margin-right: 10px;
+                        text-transform: capitalize;
+                    }
+                }
+            }
+        }
+        .chart{
+            width: 80%;
+            margin-top: 150px;
+            height: 300px;
+        }
+    }
+    .activities{
+        flex: 1;
+        h2{
+            margin-bottom: 30px;
+        }
+    }
+}

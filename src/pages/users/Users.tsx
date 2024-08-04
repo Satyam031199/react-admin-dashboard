@@ -1,11 +1,11 @@
 import { Button, Chip } from "@mui/material";
 import DataTable from "../../components/dataTable/DataTable";
-import { userRows } from "../../data";
 import "./Users.scss";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import Modal from "@mui/material/Modal";
 import AddUser from "../../components/add/AddUser";
+import { useQuery } from "@tanstack/react-query";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 90 },
@@ -78,6 +78,15 @@ const Users = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const { isPending, error, data } = useQuery({
+    queryKey: ['allusers'],
+    queryFn: () =>
+      fetch('http://localhost:8800/api/users').then((res) =>
+        res.json(),
+      ),
+  })
+  if (isPending) return 'Loading...'
+  if (error) return 'An error has occurred: ' + error.message
   return (
     <div className="users">
       <div className="info">
@@ -91,10 +100,10 @@ const Users = () => {
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <AddUser />
+          <AddUser size={data.length} setOpen={setOpen}/>
         </Modal>
       </div>
-      <DataTable columns={columns} rows={userRows} slug="users" />
+      <DataTable columns={columns} rows={data} slug="users" />
     </div>
   );
 };

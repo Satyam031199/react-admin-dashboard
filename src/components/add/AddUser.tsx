@@ -1,9 +1,9 @@
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import { Button, Stack, TextField, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
-import { styled } from "@mui/material/styles";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Checkbox from "@mui/material/Checkbox";
+import { useForm, Controller, SubmitHandler } from "react-hook-form";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const style = {
   position: "absolute" as "absolute",
@@ -18,84 +18,176 @@ const style = {
   borderRadius: "10px",
 };
 
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-});
+type FormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  img?: string;
+  verified: boolean;
+  createdAt: string;
+  id: number;
+};
 
-const AddUser = () => {
-  const handleSubmit = () => {
-    console.log('New user added');
-  }
+type Props = {
+  size: number;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+}
+const AddUser = ({size, setOpen}: Props) => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormValues>();
+
+  const queryClient = useQueryClient();
+  const mutation = useMutation({
+    mutationFn: (formData: FormValues) => {
+      return fetch(`http://localhost:8800/api/users`,{
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: [`allusers`]});
+    }
+  })
+
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // Months are zero-indexed
+    const day = today.getDate();
+
+    // Format the date as a string (e.g., "2024-08-04")
+    const formattedDate = `${day.toString().padStart(2, '0')}.${month.toString().padStart(2, '0')}.${year}`;
+    const formData = {...data,createdAt: formattedDate, id: size+1};
+    mutation.mutate(formData);
+    setOpen(false);
+  };
   return (
     <Box sx={style}>
       <Typography variant="h5" marginBottom={3}>
         Add new user
       </Typography>
-      <Stack
-        direction="row"
-        spacing={2}
-        useFlexGap
-        flexWrap="wrap"
-        marginBottom={2}
-      >
-        <TextField
-          id="outlined-basic"
-          label="First Name"
-          variant="outlined"
-          size="small"
-        />
-        <TextField
-          id="outlined-basic"
-          label="Last Name"
-          variant="outlined"
-          size="small"
-        />
-        <TextField
-          id="outlined-basic"
-          label="Email"
-          variant="outlined"
-          size="small"
-        />
-      </Stack>
-      <Stack
-        justifyContent="space-between"
-        direction="row"
-        spacing={2}
-        useFlexGap
-        flexWrap="wrap"
-        marginBottom={2}
-      >
-        <Stack spacing={2} direction='row'> 
-          <TextField
-            id="outlined-basic"
-            label="Phone"
-            variant="outlined"
-            size="small"
-          />
-          <FormControlLabel control={<Checkbox />} label="Verified" />
-        </Stack>
-        <Button
-          component="label"
-          role={undefined}
-          color="secondary"
-          tabIndex={-1}
-          startIcon={<CloudUploadIcon />}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack
+          direction="row"
+          spacing={2}
+          useFlexGap
+          flexWrap="wrap"
+          marginBottom={2}
         >
-          Upload Image
-          <VisuallyHiddenInput type="file" />
-        </Button>
-      </Stack>
-      <Stack>
-        <Button variant="contained" onClick={handleSubmit}>Add User</Button>
-      </Stack>
+          <Controller
+            name="firstName"
+            control={control}
+            defaultValue=""
+            rules={{ required: "First name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="First Name"
+                variant="outlined"
+                size="small"
+                error={!!errors.firstName}
+                helperText={errors.firstName ? errors.firstName.message : ""}
+              />
+            )}
+          />
+          <Controller
+            name="lastName"
+            control={control}
+            defaultValue=""
+            rules={{ required: "Last name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Last Name"
+                variant="outlined"
+                size="small"
+                error={!!errors.lastName}
+                helperText={errors.lastName ? errors.lastName.message : ""}
+              />
+            )}
+          />
+          <Controller
+            name="email"
+            control={control}
+            defaultValue=""
+            rules={{ required: "Email is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Email"
+                size="small"
+                variant="outlined"
+                error={!!errors.email}
+                helperText={errors.email ? errors.email.message : ""}
+              />
+            )}
+          />
+        </Stack>
+        <Stack
+          direction="row"
+          flex={1}
+          spacing={2}
+          useFlexGap
+          flexWrap="wrap"
+          marginBottom={2}
+        >
+          <Controller
+            name="phone"
+            control={control}
+            defaultValue=""
+            rules={{ required: "Phone number is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Phone Number"
+                size="small"
+                variant="outlined"
+                error={!!errors.phone}
+                helperText={errors.phone ? errors.phone.message : ""}
+              />
+            )}
+          />
+          <Controller
+            name="img"
+            control={control}
+            defaultValue=""
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Image URL"
+                size="small"
+                variant="outlined"
+              />
+            )}
+          />
+        </Stack>
+        <Controller
+          name="verified"
+          control={control}
+          defaultValue={false}
+          render={({ field }) => (
+            <FormControlLabel
+              control={
+                <Checkbox {...field} checked={field.value} color="primary" />
+              }
+              label="Verified?"
+              sx={{ marginBottom: "10px" }}
+            />
+          )}
+        />
+        <Stack>
+          <Button variant="contained" type="submit">
+            Add User
+          </Button>
+        </Stack>
+      </form>
     </Box>
   );
 };

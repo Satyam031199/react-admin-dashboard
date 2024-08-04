@@ -1,11 +1,11 @@
 import { Button, Chip } from "@mui/material";
 import DataTable from "../../components/dataTable/DataTable";
-import { products } from "../../data";
 import "./Products.scss";
 import { GridColDef } from "@mui/x-data-grid";
 import { useState } from "react";
 import Modal from "@mui/material/Modal";
 import AddProduct from "../../components/add/AddProduct";
+import { useQuery } from "@tanstack/react-query";
 
 const columns: GridColDef[] = [
   { field: "id", headerName: "ID", width: 90 },
@@ -78,6 +78,16 @@ const Products = () => {
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+  const { isPending, error, data } = useQuery({
+    queryKey: ['allproducts'],
+    queryFn: () =>
+      fetch('http://localhost:8800/api/products').then((res) =>
+        res.json(),
+      ),
+  })
+
+  if (isPending) return 'Loading...'
+  if (error) return 'An error has occurred: ' + error.message
   return (
     <div className="products">
       <div className="info">
@@ -91,10 +101,10 @@ const Products = () => {
           aria-labelledby="modal-modal-title"
           aria-describedby="modal-modal-description"
         >
-          <AddProduct />
+          <AddProduct size={data.length} setOpen={setOpen}/>
         </Modal>
       </div>
-      <DataTable columns={columns} rows={products} slug="products" />
+      <DataTable columns={columns} rows={data} slug="products" />
     </div>
   );
 };
